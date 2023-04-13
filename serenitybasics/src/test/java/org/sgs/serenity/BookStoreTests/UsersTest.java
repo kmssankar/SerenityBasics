@@ -14,6 +14,8 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import org.hamcrest.Matchers;
+import org.sgs.serenity.common.pojos.Book;
+import org.sgs.serenity.common.pojos.PMMSResponse;
 import org.sgs.serenity.common.pojos.Root;
 
 
@@ -47,15 +49,30 @@ public class UsersTest  extends UIInteractions{
 		
 	}
 
+	class ListResponse{
+		List<PMMSResponse> pMMSResponseList;
+	}
 	//""
 	public <T> void validateAttributeAvailableInListResponse(String attributeList) {
-		Root root = response.as(Root.class);
+		ListResponse resp= response.as(ListResponse.class);
         String[] attributes = attributeList.split(",");
 		for( String eachAttribute : attributes) {
-			root.books.forEach(n-> assertTrue( n.getFieldValue(eachAttribute)!= null));	
+			resp.pMMSResponseList.forEach(n-> assertTrue( checkField(n, eachAttribute, false, true,null ,null )));	
+		}	
+	}
+	
+	public static boolean checkField(PMMSResponse pMMSResponse,String fieldName,boolean hasValue, boolean checkValue , String stringValue , Integer intValue) {
+		
+		if(fieldName.equals("drugListId")) {
+			
+			if(hasValue) {
+			 return (pMMSResponse.drugListId == intValue);
+			}else if(checkValue) {
+				return pMMSResponse.drugListId!=null;
+			}
 		}
-		
-		
+
+		return false;
 	}
 	
 	public static Object getFieldValue(Object object, String attribute) {
