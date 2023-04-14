@@ -22,6 +22,7 @@ import org.sgs.serenity.common.pojos.Root;
 public class UsersTest  extends UIInteractions{
 	
 	Response response;
+	Response bookListResponse;
 	
 	@Given("As a Authorized user with Valid access ")
 	public void createRequest(String token) {
@@ -30,11 +31,25 @@ public class UsersTest  extends UIInteractions{
         .basePath("Account/v1/User");
 	}
 	
+	@Given("As a Authorized user with Valid access ")
+	public void createGetBooksRequest(String token) {
+		given().baseUri("https://bookstore.toolsqa.com/")
+		.headers("Authorization", "Bearer "+ token)
+        .basePath("BookStore/v1/Books");
+	}
+	
 	@When("when requests for Account info Account/v1/User/")
     public void whenRequestedForUserInformation(String uuid) {
         response = when().get("/" + uuid);
     }
 	
+	
+	@When("when requests for Account info Account/v1/User/")
+    public void whenRequestedForBookList() {
+		bookListResponse = when().get();
+		System.out.println("Resp -> ");
+        System.out.println("Resp -> "+ bookListResponse.getBody().asPrettyString());
+    }
 	
 	@Then("get non empty user info as result")
     public void thenISeeUserUuidAsResult(String uuid) {
@@ -53,45 +68,45 @@ public class UsersTest  extends UIInteractions{
 		List<PMMSResponse> pMMSResponseList;
 	}
 	//""
-	public <T> void validateAttributeAvailableInListResponse(String attributeList) {
-		ListResponse resp= response.as(ListResponse.class);
-        String[] attributes = attributeList.split(",");
+	public void validateAttributeAvailableInListResponse() {
+		Root resp= bookListResponse.getBody().as(Root.class);
+        String[] attributes = "author,pages,isAvailable".split(",");
 		for( String eachAttribute : attributes) {
-			resp.pMMSResponseList.forEach(n-> assertTrue( checkField(n, eachAttribute, false, true,null ,null )));	
+			resp.books.forEach(n-> assertTrue( checkField(n, eachAttribute, false, true,null ,null )));	
 		}	
 	}
 	
-	public static boolean checkField(PMMSResponse pMMSResponse,String fieldName,boolean hasValue, boolean checkValue , String stringValue , Integer intValue) {
-		
-		if(fieldName.equals("drugListId")) {
+	public static boolean checkField(Book bookResponse,String fieldName,boolean hasValue, boolean checkValue , String stringValue , Integer intValue) {
+		System.out.println("checkField" + bookResponse);
+		if(fieldName.equals("pages")) {
 			
 			if(hasValue) {
-			 return (pMMSResponse.drugListId == intValue);
+			 return (bookResponse.pages == intValue);
 			}else if(checkValue) {
-				return pMMSResponse.drugListId!=null;
+				return bookResponse.pages!=null;
 			}
 		}
 
+		if(fieldName.equals("author")) {
+			
+			if(hasValue) {
+			 return (bookResponse.author == stringValue);
+			}else if(checkValue) {
+				return bookResponse.author!=null;
+			}
+		}
+		if(fieldName.equals("isAvailable")) {
+			
+			if(hasValue) {
+			 return (bookResponse.isAvailable == checkValue);
+			}else if(checkValue) {
+				return bookResponse.isAvailable==null;
+			}
+		}
+		
 		return false;
 	}
 	
-	public static Object getFieldValue(Object object, String attribute) {
-		Object value =null;
-	try {
-			Field field = object.getClass().getDeclaredField(attribute);
-			value = field.get(object);
-			
-		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		return value;
-	}
 }
 
 

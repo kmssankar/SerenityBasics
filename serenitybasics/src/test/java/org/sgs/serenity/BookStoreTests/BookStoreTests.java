@@ -33,4 +33,10 @@ public class BookStoreTests {
 		userTest.thenISeeUserUuidAsResult(uuid);
     }
 
+	@Test
+	 public void fetchBookListInfo() {
+		userTest.createGetBooksRequest(token);
+		userTest.whenRequestedForBookList();
+		userTest.validateAttributeAvailableInListResponse();
+   }
 }
